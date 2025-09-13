@@ -503,7 +503,7 @@ function updateStrategyDetails() {
     }
     detailsBox.style.display = '';
     detailsContent.innerHTML = appliedStrategies.map(
-        stratKey => `<b>${strategies[stratKey].name}</b><br>${strategies[stratKey].desc}`
+        stratKey => `<b>${stratKey}</b><br>${strategies[stratKey].desc}`
     ).join('<hr style="border:0;border-top:1px solid #333;">');
     // Show estimated risk/earning/loss for all applied strategies
     let riskHtml = appliedStrategies.map(stratKey => {
@@ -514,7 +514,7 @@ function updateStrategyDetails() {
         let estRisk = Math.abs(estLoss) / (estEarning + Math.abs(estLoss));
         return `
             <div style="background:rgba(0,212,255,0.08);padding:1rem 1.5rem;border-radius:8px;">
-                <b>${strategies[stratKey].name}</b><br>
+                <b>${stratKey}</b><br>
                 <span style="color:#4ade80;">Est. Earning: ₹${estEarning.toFixed(2)}</span><br>
                 <span style="color:#ef4444;">Est. Loss: ₹${estLoss.toFixed(2)}</span><br>
                 <span style="color:#fbbf24;">Risk Ratio: ${(estRisk*100).toFixed(1)}%</span>
