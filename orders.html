@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders | AlgoTrader Pro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-title {
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        .sidebar-item {
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .sidebar-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .content {
+            flex: 1;
+            padding: 2rem;
+        }
+        .order-types {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .order-type-card {
+            background: linear-gradient(135deg, #00d4ff22, #0099cc22);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 1.2rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: box-shadow 0.2s, transform 0.2s;
+            min-width: 160px;
+        }
+        .order-type-card:hover {
+            box-shadow: 0 8px 24px #00d4ff33;
+            transform: translateY(-3px) scale(1.03);
+        }
+        .order-type-card.selected {
+            border: 2px solid #00d4ff;
+            background: linear-gradient(135deg, #00d4ff44, #0099cc44);
+        }
+        .order-type-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .order-form {
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.15);
+            max-width: 500px;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #00d4ff;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.6rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 5px;
+            color: white;
+        }
+        .btn {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 0.5rem 0 0 0;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .orders-table th, .orders-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .orders-table th {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .positive { color: #4ade80; }
+        .negative { color: #ef4444; }
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            .sidebar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">AlgoTrader Pro</div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='/dashboard'">Dashboard</li>
+            <li class="nav-item" onclick="window.location.href='/strategies'">Strategies</li>
+            <li class="nav-item active" onclick="window.location.href='/orders'">Orders</li>
+            <li class="nav-item" onclick="window.location.href='/portfolio'">Portfolio</li>
+            <li class="nav-item" onclick="window.location.href='/market'">Market</li>
+            <li class="nav-item" onclick="window.location.href='/community'">Community</li>
+            <li class="nav-item" onclick="window.location.href='/profile'">Profile</li>
+            <li class="nav-item" onclick="window.location.href='/backtest'">Backtest</li>
+        </ul>
+    </nav>
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-title">Quick Actions</div>
+            <div class="sidebar-item" onclick="selectOrderType('BUY')">🟢 Buy Order</div>
+            <div class="sidebar-item" onclick="selectOrderType('SELL')">🔴 Sell Order</div>
+            <div class="sidebar-item" onclick="selectOrderType('AMO')">🌙 AMO Order</div>
+            <div class="sidebar-item" onclick="selectOrderType('ICEBERG')">🧊 Iceberg Order</div>
+            <div class="sidebar-item" onclick="selectOrderType('BRACKET')">🛡️ Bracket Order</div>
+            <div class="sidebar-item" onclick="selectOrderType('COVER')">🛡️ Cover Order</div>
+        </div>
+        <div class="content">
+            <h2 style="margin-bottom: 2rem;">Place Order</h2>
+            <div class="order-types" id="order-types">
+                <div class="order-type-card selected" data-type="BUY" onclick="selectOrderType('BUY')">
+                    <div class="order-type-title">🟢 Buy</div>
+                    <div>Standard buy order</div>
+                </div>
+                <div class="order-type-card" data-type="SELL" onclick="selectOrderType('SELL')">
+                    <div class="order-type-title">🔴 Sell</div>
+                    <div>Standard sell order</div>
+                </div>
+                <div class="order-type-card" data-type="AMO" onclick="selectOrderType('AMO')">
+                    <div class="order-type-title">🌙 AMO</div>
+                    <div>After Market Order</div>
+                </div>
+                <div class="order-type-card" data-type="ICEBERG" onclick="selectOrderType('ICEBERG')">
+                    <div class="order-type-title">🧊 Iceberg</div>
+                    <div>Large order split</div>
+                </div>
+                <div class="order-type-card" data-type="BRACKET" onclick="selectOrderType('BRACKET')">
+                    <div class="order-type-title">🛡️ Bracket</div>
+                    <div>With stop loss & target</div>
+                </div>
+                <div class="order-type-card" data-type="COVER" onclick="selectOrderType('COVER')">
+                    <div class="order-type-title">🛡️ Cover</div>
+                    <div>With stop loss</div>
+                </div>
+            </div>
+            <form class="order-form" id="order-form" onsubmit="placeOrder(event)">
+                <div class="form-group">
+                    <label for="symbol">Symbol</label>
+                    <input type="text" id="symbol" required placeholder="e.g. RELIANCE">
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" required min="1" placeholder="Enter quantity">
+                </div>
+                <div class="form-group">
+                    <label for="price">Price (₹)</label>
+                    <input type="number" id="price" required min="0" step="0.01" placeholder="Enter price">
+                </div>
+                <div class="form-group" id="iceberg-fields" style="display:none;">
+                    <label for="iceberg-slices">Iceberg Slices</label>
+                    <input type="number" id="iceberg-slices" min="2" placeholder="Number of slices">
+                </div>
+                <div class="form-group" id="bracket-fields" style="display:none;">
+                    <label for="target">Target Price (₹)</label>
+                    <input type="number" id="target" min="0" step="0.01" placeholder="Target price">
+                    <label for="stoploss">Stop Loss Price (₹)</label>
+                    <input type="number" id="stoploss" min="0" step="0.01" placeholder="Stop loss price">
+                </div>
+                <div class="form-group" id="cover-fields" style="display:none;">
+                    <label for="cover-stoploss">Stop Loss Price (₹)</label>
+                    <input type="number" id="cover-stoploss" min="0" step="0.01" placeholder="Stop loss price">
+                </div>
+                <button class="btn" type="submit">Place Order</button>
+            </form>
+            <h2 style="margin: 2rem 0 1rem 0;">Today's Orders</h2>
+            <table class="orders-table" id="orders-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Order Type</th>
+                        <th>Symbol</th>
+                        <th>Qty</th>
+                        <th>Placed Price</th>
+                        <th>Market Price</th>
+                        <th>Status</th>
+                        <th>P&L</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>09:32</td>
+                        <td>BUY</td>
+                        <td>RELIANCE</td>
+                        <td>50</td>
+                        <td>₹2,450</td>
+                        <td>₹2,456</td>
+                        <td style="color:#4ade80;">FILLED</td>
+                        <td class="positive">+₹300</td>
+                    </tr>
+                    <tr>
+                        <td>10:05</td>
+                        <td>ICEBERG</td>
+                        <td>TCS</td>
+                        <td>200</td>
+                        <td>₹3,280</td>
+                        <td>₹3,287</td>
+                        <td style="color:#f59e0b;">PARTIAL</td>
+                        <td class="positive">+₹1,400</td>
+                    </tr>
+                    <tr>
+                        <td>11:15</td>
+                        <td>AMO</td>
+                        <td>HDFC</td>
+                        <td>100</td>
+                        <td>₹1,580</td>
+                        <td>₹1,587</td>
+                        <td style="color:#4ade80;">FILLED</td>
+                        <td class="positive">+₹700</td>
+                    </tr>
+                    <tr>
+                        <td>12:10</td>
+                        <td>SELL</td>
+                        <td>ITC</td>
+                        <td>80</td>
+                        <td>₹410</td>
+                        <td>₹412</td>
+                        <td style="color:#ef4444;">REJECTED</td>
+                        <td class="negative">-₹160</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        let selectedOrderType = 'BUY';
+        function selectOrderType(type) {
+            selectedOrderType = type;
+            document.querySelectorAll('.order-type-card').forEach(card => {
+                card.classList.toggle('selected', card.getAttribute('data-type') === type);
+            });
+            // Show/hide extra fields
+            document.getElementById('iceberg-fields').style.display = (type === 'ICEBERG') ? '' : 'none';
+            document.getElementById('bracket-fields').style.display = (type === 'BRACKET') ? '' : 'none';
+            document.getElementById('cover-fields').style.display = (type === 'COVER') ? '' : 'none';
+        }
+        function placeOrder(e) {
+            e.preventDefault();
+            // For demo, just alert and reset
+            alert('Order placed: ' + selectedOrderType);
+            document.getElementById('order-form').reset();
+            selectOrderType('BUY');
+        }
+    </script>
+</body>
+</html>

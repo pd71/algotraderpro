@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backtest | AlgoTrader Pro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .main-container {
+            padding: 2rem;
+            max-width: 900px;
+            margin: auto;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 2rem;
+        }
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #00d4ff;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #00d4ff;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.6rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 5px;
+            color: white;
+        }
+        select, select option {
+            background: #000 !important;
+            color: #fff !important;
+            border: 1px solid #444 !important;
+        }
+        .btn {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 0.5rem 0 0 0;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(102, 126, 234, 0.1));
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 1rem;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            color: #a0a0a0;
+        }
+        .positive { color: #4ade80; }
+        .negative { color: #ef4444; }
+        .chart-container {
+            height: 300px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">AlgoTrader Pro</div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='/dashboard'">Dashboard</li>
+            <li class="nav-item" onclick="window.location.href='/strategies'">Strategies</li>
+            <li class="nav-item" onclick="window.location.href='/orders'">Orders</li>
+            <li class="nav-item" onclick="window.location.href='/portfolio'">Portfolio</li>
+            <li class="nav-item" onclick="window.location.href='/market'">Market</li>
+            <li class="nav-item" onclick="window.location.href='/community'">Community</li>
+            <li class="nav-item" onclick="window.location.href='/profile'">Profile</li>
+            <li class="nav-item active" onclick="window.location.href='/backtest'">Backtest</li>
+        </ul>
+    </nav>
+    <div class="main-container">
+        <div class="card">
+            <h2 class="card-title">Run Backtest</h2>
+            <form id="backtest-form" onsubmit="runBacktest(event)">
+                <div class="form-group">
+                    <label for="strategy">Select Strategy</label>
+                    <select id="strategy" required>
+                        <option value="RSI">RSI Mean Reversion</option>
+                        <option value="MACD">MACD Crossover</option>
+                        <option value="Momentum">Momentum</option>
+                        <option value="Breakout">Breakout</option>
+                        <option value="MovingAvg">Moving Average Cross</option>
+                        <option value="Bollinger">Bollinger Bands</option>
+                        <option value="Supertrend">Supertrend</option>
+                        <option value="VWAP">VWAP</option>
+                        <option value="ADX">ADX Trend</option>
+                        <option value="Stochastic">Stochastic Oscillator</option>
+                        <option value="ATR">ATR Volatility</option>
+                        <option value="Donchian">Donchian Channel</option>
+                        <option value="Ichimoku">Ichimoku Cloud</option>
+                        <option value="ParabolicSAR">Parabolic SAR</option>
+                        <option value="CCI">CCI Strategy</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="symbol">Symbol</label>
+                    <input type="text" id="symbol" required placeholder="e.g. RELIANCE">
+                </div>
+                <div class="form-group">
+                    <label for="timeframe">Timeframe</label>
+                    <select id="timeframe" required>
+                        <option value="1d">1 Day</option>
+                        <option value="1h">1 Hour</option>
+                        <option value="15m">15 Minutes</option>
+                        <option value="5m">5 Minutes</option>
+                    </select>
+                </div>
+                <button class="btn" type="submit">▶️ Run Backtest</button>
+            </form>
+        </div>
+        <div id="results" style="display:none;">
+            <div class="card">
+                <h2 class="card-title">Backtest Results</h2>
+                <div class="metric-card">
+                    <div class="metric-value" id="total-return"></div>
+                    <div class="metric-label">Total Return</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="win-trades"></div>
+                    <div class="metric-label">Winning Trades</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="loss-trades"></div>
+                    <div class="metric-label">Losing Trades</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="net-profit"></div>
+                    <div class="metric-label">Net Profit</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="backtestChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    function runBacktest(e) {
+        e.preventDefault();
+        // Simulate backtest with random data
+        const totalReturn = (Math.random() * 40 - 10).toFixed(2); // -10% to +30%
+        const winTrades = Math.floor(Math.random() * 10 + 10);
+        const lossTrades = Math.floor(Math.random() * 5 + 3);
+        const netProfit = Math.floor(Math.random() * 100000 + 20000);
+
+        document.getElementById('total-return').textContent = (totalReturn > 0 ? "+" : "") + totalReturn + "%";
+        document.getElementById('total-return').className = "metric-value " + (totalReturn > 0 ? "positive" : "negative");
+        document.getElementById('win-trades').textContent = winTrades;
+        document.getElementById('loss-trades').textContent = lossTrades;
+        document.getElementById('net-profit').textContent = (netProfit > 0 ? "+₹" : "-₹") + Math.abs(netProfit).toLocaleString();
+
+        // Generate random equity curve
+        let equity = 100000;
+        let data = [];
+        for(let i=0;i<30;i++) {
+            equity += (Math.random()-0.45)*5000;
+            data.push(Math.max(0, Math.round(equity)));
+        }
+
+        // Show chart
+        if(window.backtestChartObj) window.backtestChartObj.destroy();
+        window.backtestChartObj = new Chart(document.getElementById('backtestChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: Array.from({length:30}, (_,i)=>`Day ${i+1}`),
+                datasets: [{
+                    label: 'Equity Curve',
+                    data: data,
+                    borderColor: '#00d4ff',
+                    backgroundColor: 'rgba(0,212,255,0.08)',
+                    tension: 0.3,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { labels: { color: '#fff' } }
+                },
+                scales: {
+                    x: { ticks: { color: '#a0a0a0' } },
+                    y: { ticks: { color: '#a0a0a0' } }
+                }
+            }
+        });
+
+        document.getElementById('results').style.display = '';
+    }
+    </script>
+</body>
+</html>

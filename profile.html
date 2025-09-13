@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | AlgoTrader Pro</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; margin: 0; }
+        .navbar { background: rgba(0,0,0,0.9); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #00d4ff; }
+        .nav-menu { display: flex; list-style: none; gap: 2rem; }
+        .nav-item { cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; }
+        .nav-item:hover, .nav-item.active { background: rgba(0,212,255,0.2); }
+        .main-container { padding: 2rem; max-width: 700px; margin: auto; }
+        .profile-header { display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; }
+        .avatar { width: 80px; height: 80px; border-radius: 50%; background: #00d4ff; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #fff; font-weight: bold; }
+        .profile-info { flex: 1; }
+        .profile-name { font-size: 2rem; font-weight: bold; color: #00d4ff; }
+        .profile-bio { color: #a0a0a0; margin-top: 0.5rem; }
+        .stats { display: flex; gap: 2rem; margin-top: 1rem; }
+        .stat { background: rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem 2rem; text-align: center; }
+        .stat-label { color: #fbbf24; font-weight: bold; }
+        .strategies-list { margin-top: 2rem; }
+        .strategy-card { background: rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+        .strategy-title { color: #00d4ff; font-weight: bold; }
+        .strategy-desc { color: #fff; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">AlgoTrader Pro</div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='/dashboard'">Dashboard</li>
+            <li class="nav-item" onclick="window.location.href='/strategies'">Strategies</li>
+            <li class="nav-item" onclick="window.location.href='/market'">Market</li>
+            <li class="nav-item" onclick="window.location.href='/community'">Community</li>
+            <li class="nav-item active" onclick="window.location.href='/profile'">Profile</li>
+        </ul>
+    </nav>
+    <div class="main-container">
+        <div class="profile-header">
+            <div class="avatar">A</div>
+            <div class="profile-info">
+                <div class="profile-name">Amit</div>
+                <div class="profile-bio">Trader | Strategy Builder | Algo Enthusiast</div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-label">Followers</div>
+                        <div>128</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Following</div>
+                        <div>54</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Strategies Shared</div>
+                        <div>7</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="strategies-list">
+            <h3 style="color:#00d4ff;">Shared Strategies</h3>
+            <div class="strategy-card">
+                <div class="strategy-title">RSI Mean Reversion</div>
+                <div class="strategy-desc">Buys when RSI < 30, sells when RSI > 70. Good for range-bound markets.</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-title">MACD Crossover</div>
+                <div class="strategy-desc">Buy when MACD crosses above signal, sell when below. Trend following.</div>
+            </div>
+            <div class="strategy-card">
+                <div class="strategy-title">Bollinger Bands</div>
+                <div class="strategy-desc">Buy at lower band, sell at upper band. Volatility-based.</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

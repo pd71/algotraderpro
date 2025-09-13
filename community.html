@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community | AlgoTrader Pro</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; margin: 0; }
+        .navbar { background: rgba(0,0,0,0.9); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #00d4ff; }
+        .nav-menu { display: flex; list-style: none; gap: 2rem; }
+        .nav-item { cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; transition: background 0.3s; }
+        .nav-item:hover, .nav-item.active { background: rgba(0,212,255,0.2); }
+        .main-container { padding: 2rem; max-width: 900px; margin: auto; }
+        .post { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px #00d4ff22; }
+        .post-header { display: flex; align-items: center; gap: 1rem; }
+        .avatar { width: 48px; height: 48px; border-radius: 50%; background: #00d4ff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; font-weight: bold; }
+        .username { font-weight: bold; color: #00d4ff; }
+        .post-content { margin: 1rem 0; }
+        .post-actions { display: flex; gap: 2rem; }
+        .action-btn { background: none; border: none; color: #fff; cursor: pointer; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .action-btn.liked { color: #4ade80; }
+        .action-btn.followed { color: #fbbf24; }
+        .comments { margin-top: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; }
+        .comment { margin-bottom: 0.7rem; }
+        .comment-user { color: #00d4ff; font-weight: bold; }
+        .comment-text { color: #fff; }
+        .add-comment { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .add-comment input { flex: 1; padding: 0.5rem; border-radius: 5px; border: none; }
+        .add-comment button { background: #00d4ff; color: #fff; border: none; border-radius: 5px; padding: 0.5rem 1rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">AlgoTrader Pro</div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='/dashboard'">Dashboard</li>
+            <li class="nav-item" onclick="window.location.href='/strategies'">Strategies</li>
+            <li class="nav-item" onclick="window.location.href='/market'">Market</li>
+            <li class="nav-item" onclick="window.location.href='/community'">Community</li>
+            <li class="nav-item" onclick="window.location.href='/profile'">Profile</li>
+        </ul>
+    </nav>
+    <div class="main-container">
+        <h2>Community Strategies</h2>
+        <div id="posts"></div>
+    </div>
+    <script>
+const mockPosts = [
+    {
+        id: 1,
+        user: { name: "Amit", avatar: "A" },
+        content: "Check out my RSI Mean Reversion strategy! Buys when RSI < 30, sells when RSI > 70.",
+        likes: 12,
+        liked: false,
+        followed: false,
+        comments: [
+            { user: "Priya", text: "Nice! What timeframe do you use?" },
+            { user: "Rahul", text: "I tried this, works well on NIFTY." }
+        ]
+    },
+    {
+        id: 2,
+        user: { name: "Priya", avatar: "P" },
+        content: "MACD Crossover is my go-to for trending markets. Buy when MACD crosses above signal.",
+        likes: 8,
+        liked: false,
+        followed: true,
+        comments: [
+            { user: "Amit", text: "Great explanation!" }
+        ]
+    },
+    {
+        id: 3,
+        user: { name: "Rahul", avatar: "R" },
+        content: "I use Bollinger Bands for volatility. Buy at lower band, sell at upper band.",
+        likes: 5,
+        liked: true,
+        followed: false,
+        comments: []
+    }
+];
+
+function renderPosts() {
+    const postsDiv = document.getElementById('posts');
+    postsDiv.innerHTML = '';
+    mockPosts.forEach(post => {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'post';
+        postDiv.innerHTML = `
+            <div class="post-header">
+                <div class="avatar">${post.user.avatar}</div>
+                <div class="username">${post.user.name}</div>
+            </div>
+            <div class="post-content">${post.content}</div>
+            <div class="post-actions">
+                <button class="action-btn${post.liked ? ' liked' : ''}" onclick="likePost(${post.id})">👍 ${post.likes}</button>
+                <button class="action-btn${post.followed ? ' followed' : ''}" onclick="followUser(${post.id})">👤 Follow</button>
+            </div>
+            <div class="comments">
+                ${post.comments.map(c => `<div class='comment'><span class='comment-user'>${c.user}:</span> <span class='comment-text'>${c.text}</span></div>`).join('')}
+                <div class="add-comment">
+                    <input type="text" id="comment-input-${post.id}" placeholder="Add a comment...">
+                    <button onclick="addComment(${post.id})">Comment</button>
+                </div>
+            </div>
+        `;
+        postsDiv.appendChild(postDiv);
+    });
+}
+
+window.likePost = function(id) {
+    const post = mockPosts.find(p => p.id === id);
+    if (post) {
+        post.liked = !post.liked;
+        post.likes += post.liked ? 1 : -1;
+        renderPosts();
+    }
+}
+window.followUser = function(id) {
+    const post = mockPosts.find(p => p.id === id);
+    if (post) {
+        post.followed = !post.followed;
+        renderPosts();
+    }
+}
+window.addComment = function(id) {
+    const input = document.getElementById(`comment-input-${id}`);
+    const text = input.value.trim();
+    if (text) {
+        const post = mockPosts.find(p => p.id === id);
+        post.comments.push({ user: "You", text });
+        input.value = '';
+        renderPosts();
+    }
+}
+renderPosts();
+    </script>
+</body>
+</html>

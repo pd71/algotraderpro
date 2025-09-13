@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlgoTrader Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .content {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #00d4ff;
+        }
+
+        .watchlist {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .stock-price {
+            font-weight: bold;
+        }
+
+        .positive { color: #4ade80; }
+        .negative { color: #ef4444; }
+
+        .strategy-builder {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 1rem;
+            height: 600px;
+        }
+
+        .component-palette {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .canvas {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .properties-panel {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .draggable-component {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: grab;
+            transition: transform 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .draggable-component:hover {
+            transform: scale(1.05);
+        }
+
+        .draggable-component:active {
+            cursor: grabbing;
+        }
+
+        .dropped-component {
+            position: absolute;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: move;
+            min-width: 120px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: #00d4ff;
+            transform-origin: left center;
+            z-index: 1;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #00d4ff;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .orders-table th {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .chart-container {
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .portfolio-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(102, 126, 234, 0.1));
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: #a0a0a0;
+        }
+
+        .backtest-results {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .sidebar-item {
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00d4ff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .draggable-strategy {
+            background: linear-gradient(135deg, #667eea, #00d4ff);
+            color: #fff;
+            padding: 0.7rem 1rem;
+            margin-bottom: 0.7rem;
+            border-radius: 7px;
+            cursor: grab;
+            font-weight: 500;
+            box-shadow: 0 2px 8px #00d4ff22;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .draggable-strategy:active {
+            cursor: grabbing;
+            transform: scale(1.04);
+            box-shadow: 0 4px 16px #00d4ff44;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .strategy-builder {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">AlgoTrader Pro</div>
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="window.location.href='/dashboard'">Dashboard</li>
+            <li class="nav-item" onclick="window.location.href='/strategies'">Strategies</li>
+            <li class="nav-item" onclick="window.location.href='/orders'">Orders</li>
+            <li class="nav-item" onclick="window.location.href='/portfolio'">Portfolio</li>
+            <li class="nav-item" onclick="window.location.href='/market'">Market</li>
+            <li class="nav-item" onclick="window.location.href='/community'">Community</li>
+            <li class="nav-item" onclick="window.location.href='/profile'">Profile</li>
+            <li class="nav-item" onclick="window.location.href='/backtest'">Backtest</li>
+            <li class="nav-item" onclick="window.location.href='papertrading.html'">Paper Trading</li>
+        </ul>
+    </nav>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Quick Actions</div>
+                <div class="sidebar-item" onclick="showBuyDialog()">🟢 Buy Order</div>
+                <div class="sidebar-item" onclick="showSellDialog()">🔴 Sell Order</div>
+                <div class="sidebar-item" onclick="createNewStrategy()">⚡ New Strategy</div>
+                <div class="sidebar-item" onclick="window.location.href='backtest.html'">📊 Run Backtest</div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Active Strategies</div>
+                <div class="sidebar-item">
+                    <div>RSI Mean Reversion</div>
+                    <small style="color: #4ade80;">Running • +2.3%</small>
+                </div>
+                <div class="sidebar-item">
+                    <div>MACD Crossover</div>
+                    <small style="color: #ef4444;">Stopped • -0.8%</small>
+                </div>
+                <div class="sidebar-item">
+                    <div>Momentum Strategy</div>
+                    <small style="color: #4ade80;">Running • +5.7%</small>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Market Status</div>
+                <div class="sidebar-item">
+                    <div>NIFTY 50</div>
+                    <small class="positive">19,245.30 (+0.85%)</small>
+                </div>
+                <div class="sidebar-item">
+                    <div>BANK NIFTY</div>
+                    <small class="negative">43,127.45 (-0.34%)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <h2 style="margin-bottom: 2rem;">Trading Dashboard</h2>
+                
+                <div class="portfolio-summary">
+                    <div class="metric-card">
+                        <div class="metric-value positive">₹2,45,678</div>
+                        <div class="metric-label">Total P&L</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">₹8,95,432</div>
+                        <div class="metric-label">Portfolio Value</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value positive">+12.4%</div>
+                        <div class="metric-label">Today's Return</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">15</div>
+                        <div class="metric-label">Active Positions</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3 class="card-title">Live Chart</h3>
+                        <div class="chart-container">
+                            <div style="text-align: center; color: #a0a0a0;">
+                                <div>📈</div>
+                                <p>Real-time chart will appear here</p>
+                                <button class="btn" onclick="loadChart()">Load Chart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Watchlist</h3>
+                        <div class="watchlist" id="watchlist">
+                            <div class="stock-item">
+                                <span>RELIANCE</span>
+                                <span class="stock-price positive">₹2,456.30 (+1.2%)</span>
+                            </div>
+                            <div class="stock-item">
+                                <span>TCS</span>
+                                <span class="stock-price negative">₹3,287.45 (-0.8%)</span>
+                            </div>
+                            <div class="stock-item">
+                                <span>HDFC BANK</span>
+                                <span class="stock-price positive">₹1,587.90 (+0.5%)</span>
+                            </div>
+                            <div class="stock-item">
+                                <span>INFY</span>
+                                <span class="stock-price positive">₹1,432.15 (+2.1%)</span>
+                            </div>
+                            <div class="stock-item">
+                                <span>ITC</span>
+                                <span class="stock-price negative">₹412.80 (-1.3%)</span>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="addToWatchlist()">Add Symbol</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Recent Trades</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Symbol</th>
+                                <th>Action</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>P&L</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>10:30 AM</td>
+                                <td>RELIANCE</td>
+                                <td>BUY</td>
+                                <td>50</td>
+                                <td>₹2,450</td>
+                                <td class="positive">+₹315</td>
+                            </tr>
+                            <tr>
+                                <td>10:15 AM</td>
+                                <td>TCS</td>
+                                <td>SELL</td>
+                                <td>25</td>
+                                <td>₹3,290</td>
+                                <td class="negative">-₹125</td>
+                            </tr>
+                            <tr>
+                                <td>09:45 AM</td>
+                                <td>HDFC</td>
+                                <td>BUY</td>
+                                <td>100</td>
+                                <td>₹1,585</td>
+                                <td class="positive">+₹290</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Strategy Builder Section -->
+            <div id="strategies" class="section">
+                <h2 style="margin-bottom: 1rem;">Strategy Builder</h2>
+                <div style="display: flex; gap: 2rem;">
+                    <!-- Sidebar with strategies -->
+                    <div style="width: 220px; background: rgba(0,0,0,0.6); border-radius: 10px; padding: 1rem;">
+                        <h4 style="color:#00d4ff; margin-bottom:1rem;">Drag a Strategy</h4>
+                        <div id="strategy-list">
+                            <div class="draggable-strategy" draggable="true" data-strategy="RSI">RSI Mean Reversion</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="MACD">MACD Crossover</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="Momentum">Momentum</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="Breakout">Breakout</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="MovingAvg">Moving Average Cross</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="Bollinger">Bollinger Bands</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="Supertrend">Supertrend</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="VWAP">VWAP</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="ADX">ADX Trend</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="Stochastic">Stochastic Oscillator</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="ATR">ATR Volatility</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="Donchian">Donchian Channel</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="Ichimoku">Ichimoku Cloud</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="ParabolicSAR">Parabolic SAR</div>
+                            <div class="draggable-strategy" draggable="true" data-strategy="CCI">CCI Strategy</div>
+                        </div>
+                    </div>
+                    <!-- Chart and drop area -->
+                    <div style="flex:1;">
+                        <div id="chart-container" style="background:rgba(255,255,255,0.08); border-radius:10px; padding:1rem; min-height:400px; position:relative;">
+                            <canvas id="strategyChart" height="320"></canvas>
+                            <div id="drop-hint" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#a0a0a0;text-align:center;pointer-events:none;">
+                                <div style="font-size:2rem;">⬇️</div>
+                                <div>Drag a strategy here to apply</div>
+                            </div>
+                        </div>
+                        <div id="strategy-details" style="margin-top:2rem; background:rgba(0,0,0,0.5); border-radius:10px; padding:1rem; display:none;">
+                            <h4 style="color:#00d4ff;">Strategy Details</h4>
+                            <div id="details-content" style="color:#fff;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div id="orders" class="section">
+                <h2 style="margin-bottom: 1rem;">Orders & Positions</h2>
+                
+                <div class="card">
+                    <h3 class="card-title">Open Orders</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Symbol</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-tbody">
+                            <tr>
+                                <td>#12345</td>
+                                <td>RELIANCE</td>
+                                <td>LIMIT BUY</td>
+                                <td>50</td>
+                                <td>₹2,440</td>
+                                <td style="color: #f59e0b;">PENDING</td>
+                                <td><button class="btn btn-danger" style="padding: 0.3rem 0.8rem;">Cancel</button></td>
+                            </tr>
+                            <tr>
+                                <td>#12346</td>
+                                <td>TCS</td>
+                                <td>STOP LOSS</td>
+                                <td>25</td>
+                                <td>₹3,200</td>
+                                <td style="color: #4ade80;">TRIGGER PENDING</td>
+                                <td><button class="btn btn-danger" style="padding: 0.3rem 0.8rem;">Modify</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Current Positions</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Quantity</th>
+                                <th>Avg Price</th>
+                                <th>LTP</th>
+                                <th>P&L</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>RELIANCE</td>
+                                <td>100</td>
+                                <td>₹2,450</td>
+                                <td>₹2,456</td>
+                                <td class="positive">+₹600</td>
+                                <td><button class="btn btn-danger" style="padding: 0.3rem 0.8rem;">Exit</button></td>
+                            </tr>
+                            <tr>
+                                <td>HDFC</td>
+                                <td>75</td>
+                                <td>₹1,590</td>
+                                <td>₹1,587</td>
+                                <td class="negative">-₹225</td>
+                                <td><button class="btn btn-danger" style="padding: 0.3rem 0.8rem;">Exit</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Portfolio Section -->
+            <div id="portfolio" class="section">
+                <h2 style="margin-bottom: 1rem;">Portfolio Analysis</h2>
+                
+                <div class="portfolio-summary">
+                    <div class="metric-card">
+                        <div class="metric-value">₹10,45,678</div>
+                        <div class="metric-label">Total Investment</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">₹12,34,567</div>
+                        <div class="metric-label">Current Value</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value positive">+18.1%</div>
+                        <div class="metric-label">Overall Return</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value positive">+₹1,88,889</div>
+                        <div class="metric-label">Total Profit</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3 class="card-title">Portfolio Composition</h3>
+                        <div class="chart-container">
+                            <div style="text-align: center; color: #a0a0a0;">
+                                <div>🥧</div>
+                                <p>Portfolio pie chart</p>
+                                <button class="btn">View Detailed Breakdown</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Performance Over Time</h3>
+                        <div class="chart-container">
+                            <div style="text-align: center; color: #a0a0a0;">
+                                <div>📊</div>
+                                <p>Portfolio performance graph</p>
+                                <button class="btn">View Historical Data</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Holdings</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Quantity</th>
+                                <th>Avg Cost</th>
+                                <th>Current Price</th>
+                                <th>Investment</th>
+                                <th>Current Value</th>
+                                <th>P&L</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>RELIANCE</td>
+                                <td>150</td>
+                                <td>₹2,420</td>
+                                <td>₹2,456</td>
+                                <td>₹3,63,000</td>
+                                <td>₹3,68,400</td>
+                                <td class="positive">+₹5,400 (+1.49%)</td>
+                            </tr>
+                            <tr>
+                                <td>TCS</td>
+                                <td>100</td>
+                                <td>₹3,350</td>
+                                <td>₹3,287</td>
+                                <td>₹3,35,000</td>
+                                <td>₹3,28,700</td>
+                                <td class="negative">-₹6,300 (-1.88%)</td>
+                            </tr>
+                            <tr>
+                                <td>HDFC BANK</td>
+                                <td>200</td>
+                                <td>₹1,570</td>
+                                <td>₹1,587</td>
+                                <td>₹3,14,000</td>
+                                <td>₹3,17,400</td>
+                                <td class="positive">+₹3,400 (+1.08%)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Market Section -->
+            <div id="market" class="section">
+                <h2 style="margin-bottom: 1rem;">Market Overview</h2>
+                
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3 class="card-title">Market Indices</h3>
+                        <div class="stock-item">
+                            <span>NIFTY 50</span>
+                            <span class="stock-price positive">19,245.30 (+0.85%)</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>BANK NIFTY</span>
+                            <span class="stock-price negative">43,127.45 (-0.34%)</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>SENSEX</span>
+                            <span class="stock-price positive">64,718.56 (+1.12%)</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>NIFTY IT</span>
+                            <span class="stock-price positive">28,456.78 (+2.45%)</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Top Gainers</h3>
+                        <div class="stock-item">
+                            <span>ADANI PORTS</span>
+                            <span class="stock-price positive">+8.45%</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>TATA STEEL</span>
+                            <span class="stock-price positive">+6.78%</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>BAJAJ FINANCE</span>
+                            <span class="stock-price positive">+5.23%</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>MARUTI</span>
+                            <span class="stock-price positive">+4.56%</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Top Losers</h3>
+                        <div class="stock-item">
+                            <span>RELIANCE</span>
+                            <span class="stock-price negative">-2.34%</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>HDFC BANK</span>
+                            <span class="stock-price negative">-1.78%</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>TCS</span>
+                            <span class="stock-price negative">-1.23%</span>
+                        </div>
+                        <div class="stock-item">
+                            <span>INFY</span>
+                            <span class="stock-price negative">-0.98%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Market News</h3>
+                    <div style="color: #a0a0a0;">
+                        <p>📰 Sensex hits all-time high as bulls take charge.</p>
+                        <p>📉 Nifty Bank index underperforms as profit booking drags down major banks.</p>
+                        <p>💹 Mid-cap and Small-cap indices rally, outperforming large caps.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backtest Section -->
+            <div id="backtest" class="section">
+                <h2 style="margin-bottom: 1rem;">Backtest Strategies</h2>
+                
+                <div class="card">
+                    <h3 class="card-title">Run Backtest</h3>
+                    <div class="form-group">
+                        <label for="strategy-select">Select Strategy</label>
+                        <select id="strategy-select">
+                            <option value="rsi-mean-reversion">RSI Mean Reversion</option>
+                            <option value="macd-crossover">MACD Crossover</option>
+                            <option value="momentum-strategy">Momentum Strategy</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="symbol-input">Enter Symbol</label>
+                        <input type="text" id="symbol-input" placeholder="e.g., AAPL, BTCUSDT">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timeframe-select">Select Timeframe</label>
+                        <select id="timeframe-select">
+                            <option value="1m">1 Minute</option>
+                            <option value="5m">5 Minutes</option>
+                            <option value="15m">15 Minutes</option>
+                            <option value="1h">1 Hour</option>
+                            <option value="1d">1 Day</option>
+                        </select>
+                    </div>
+
+                    <button class="btn" onclick="runBacktest()">▶️ Run Backtest</button>
+                </div>
+
+                <div class="backtest-results" id="backtest-results" style="display: none;">
+                    <h3 style="margin-bottom: 1rem;">Backtest Results</h3>
+                    <div class="metric-card">
+                        <div class="metric-value">+25.6%</div>
+                        <div class="metric-label">Total Return</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">15</div>
+                        <div class="metric-label">Winning Trades</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">5</div>
+                        <div class="metric-label">Losing Trades</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">+₹1,25,000</div>
+                        <div class="metric-label">Net Profit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const strategies = {
+    RSI: {
+        name: "RSI Mean Reversion",
+        desc: "Buys when RSI < 30, sells when RSI > 70. Good for range-bound markets.",
+        color: "#4ade80"
+    },
+    MACD: {
+        name: "MACD Crossover",
+        desc: "Buy when MACD crosses above signal, sell when below. Trend following.",
+        color: "#f59e42"
+    },
+    Momentum: {
+        name: "Momentum",
+        desc: "Buys assets with high recent returns, sells laggards.",
+        color: "#00d4ff"
+    },
+    Breakout: {
+        name: "Breakout",
+        desc: "Buys when price breaks above resistance, sells on breakdown.",
+        color: "#ef4444"
+    },
+    MovingAvg: {
+        name: "Moving Average Cross",
+        desc: "Buy when short MA crosses above long MA, sell on reverse.",
+        color: "#a78bfa"
+    },
+    Bollinger: {
+        name: "Bollinger Bands",
+        desc: "Buy at lower band, sell at upper band. Volatility-based.",
+        color: "#fbbf24"
+    },
+    Supertrend: {
+        name: "Supertrend",
+        desc: "Trend-following indicator using ATR.",
+        color: "#22d3ee"
+    },
+    VWAP: {
+        name: "VWAP",
+        desc: "Buys below VWAP, sells above. Used by institutions.",
+        color: "#f472b6"
+    },
+    ADX: {
+        name: "ADX Trend",
+        desc: "Measures trend strength. Buys strong trends.",
+        color: "#34d399"
+    },
+    Stochastic: {
+        name: "Stochastic Oscillator",
+        desc: "Buys when oversold, sells when overbought.",
+        color: "#f87171"
+    },
+    ATR: {
+        name: "ATR Volatility",
+        desc: "Adjusts position size based on volatility.",
+        color: "#facc15"
+    },
+    Donchian: {
+        name: "Donchian Channel",
+        desc: "Buys breakout above channel, sells below.",
+        color: "#818cf8"
+    },
+    Ichimoku: {
+        name: "Ichimoku Cloud",
+        desc: "Comprehensive trend-following system.",
+        color: "#38bdf8"
+    },
+    ParabolicSAR: {
+        name: "Parabolic SAR",
+        desc: "Trailing stop and reversal system.",
+        color: "#f472b6"
+    },
+    CCI: {
+        name: "CCI Strategy",
+        desc: "Buys when CCI < -100, sells when > 100.",
+        color: "#fbbf24"
+    }
+};
+
+// Generate random price data
+function randomData(len=60, start=1000) {
+    let arr = [start];
+    for(let i=1;i<len;i++) {
+        arr.push(arr[i-1] + (Math.random()-0.5)*10);
+    }
+    return arr;
+}
+
+let chart, stratLine;
+function renderChart(strategyKey) {
+    const labels = Array.from({length:60}, (_,i)=>`T${i+1}`);
+    const priceData = randomData();
+    let stratData = priceData.map(v=>v);
+
+    // For demo, strategy overlays are just offset lines
+    if(strategyKey) {
+        stratData = priceData.map((v,i)=>v + Math.sin(i/6)*10 + (Math.random()-0.5)*5);
+    }
+
+    if(chart) chart.destroy();
+    chart = new Chart(document.getElementById('strategyChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Stock Price',
+                    data: priceData,
+                    borderColor: '#00d4ff',
+                    backgroundColor: 'rgba(0,212,255,0.08)',
+                    tension: 0.3,
+                    pointRadius: 0
+                }
+            ].concat(strategyKey ? [{
+                label: strategies[strategyKey].name,
+                data: stratData,
+                borderColor: strategies[strategyKey].color,
+                borderDash: [8,4],
+                backgroundColor: 'rgba(0,0,0,0)',
+                tension: 0.3,
+                pointRadius: 0
+            }] : []),
+        },
+        options: {
+            plugins: {
+                legend: { labels: { color: '#fff' } }
+            },
+            scales: {
+                x: { ticks: { color: '#a0a0a0' } },
+                y: { ticks: { color: '#a0a0a0' } }
+            }
+        }
+    });
+}
+
+renderChart();
+
+const chartContainer = document.getElementById('chart-container');
+const dropHint = document.getElementById('drop-hint');
+const detailsBox = document.getElementById('strategy-details');
+const detailsContent = document.getElementById('details-content');
+
+chartContainer.addEventListener('dragover', e => {
+    e.preventDefault();
+    chartContainer.style.background = 'rgba(0,212,255,0.12)';
+    dropHint.style.opacity = 0.7;
+});
+chartContainer.addEventListener('dragleave', e => {
+    chartContainer.style.background = 'rgba(255,255,255,0.08)';
+    dropHint.style.opacity = 1;
+});
+chartContainer.addEventListener('drop', e => {
+    e.preventDefault();
+    chartContainer.style.background = 'rgba(255,255,255,0.08)';
+    dropHint.style.opacity = 0;
+    const stratKey = e.dataTransfer.getData('strategy');
+    if(stratKey && strategies[stratKey]) {
+        renderChart(stratKey);
+        detailsBox.style.display = '';
+        detailsContent.innerHTML = `<b>${strategies[stratKey].name}</b><br>${strategies[stratKey].desc}`;
+    }
+});
+
+// Make strategies draggable
+document.querySelectorAll('.draggable-strategy').forEach(el => {
+    el.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('strategy', el.getAttribute('data-strategy'));
+    });
+});
+    </script>
+</body>
+</html>

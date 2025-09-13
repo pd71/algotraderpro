@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategies | AlgoTrader Pro</title>
+    <link rel="stylesheet" href="frontend.css"><!-- If you have a CSS file, else copy styles below -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-title {
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        .sidebar-item {
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .sidebar-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .content {
+            flex: 1;
+            padding: 2rem;
+        }
+        .draggable-strategy {
+            background: linear-gradient(135deg, #667eea, #00d4ff);
+            color: #fff;
+            padding: 0.7rem 1rem;
+            margin-bottom: 0.7rem;
+            border-radius: 7px;
+            cursor: grab;
+            font-weight: 500;
+            box-shadow: 0 2px 8px #00d4ff22;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .draggable-strategy:active {
+            cursor: grabbing;
+            transform: scale(1.04);
+            box-shadow: 0 4px 16px #00d4ff44;
+        }
+        .strategy-tooltip {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            background: #222;
+            color: #fff;
+            padding: 0.7em 1em;
+            border-radius: 7px;
+            font-size: 0.95em;
+            box-shadow: 0 2px 8px #0008;
+            pointer-events: none;
+            max-width: 260px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">AlgoTrader Pro</div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='/dashboard'">Dashboard</li>
+            <li class="nav-item active" onclick="window.location.href='/strategies'">Strategies</li>
+            <li class="nav-item" onclick="window.location.href='/orders'">Orders</li>
+            <li class="nav-item" onclick="window.location.href='/portfolio'">Portfolio</li>
+            <li class="nav-item" onclick="window.location.href='/market'">Market</li>
+            <li class="nav-item" onclick="window.location.href='/community'">Community</li>
+            <li class="nav-item" onclick="window.location.href='/profile'">Profile</li>
+            <li class="nav-item" onclick="window.location.href='/backtest'">Backtest</li>
+        </ul>
+    </nav>
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-title">Strategies</div>
+            <div class="sidebar-item">Create New</div>
+            <div class="sidebar-item">Import</div>
+            <div class="sidebar-item">Export</div>
+        </div>
+        <div class="content">
+            <h2 style="margin-bottom: 1rem;">Strategy Builder</h2>
+            <div style="display: flex; gap: 2rem;">
+                <!-- Sidebar with strategies -->
+                <div style="width: 220px; background: rgba(0,0,0,0.6); border-radius: 10px; padding: 1rem;">
+                    <h4 style="color:#00d4ff; margin-bottom:1rem;">Drag a Strategy</h4>
+                    <div id="strategy-list">
+                        <!-- Strategies loaded from API -->
+                    </div>
+                </div>
+                <!-- Chart and drop area -->
+                <div style="flex:1;">
+                    <div id="chart-container" style="background:rgba(255,255,255,0.08); border-radius:10px; padding:1rem; min-height:320px; position:relative;">
+                        <canvas id="strategyChart" height="180"></canvas>
+                        <div id="drop-hint" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#a0a0a0;text-align:center;pointer-events:none;">
+                            <div style="font-size:2rem;">⬇️</div>
+                            <div>Drag a strategy here to apply</div>
+                        </div>
+                    </div>
+                    <div id="strategy-details" style="margin-top:2rem; background:rgba(0,0,0,0.5); border-radius:10px; padding:1rem; display:none;">
+                        <h4 style="color:#00d4ff;">Strategy Details</h4>
+                        <div id="details-content" style="color:#fff;"></div>
+                        <div id="risk-earning-loss" style="margin-top:1rem; display:flex; gap:2rem;"></div>
+                    </div>
+                    <div style="margin-top:1rem;">
+                        <label for="predict-horizon" style="color:#00d4ff;font-weight:bold;">Show Prediction:</label>
+                        <select id="predict-horizon" style="background:#222;color:#fff;border-radius:5px;padding:0.3rem 1rem;">
+                            <option value="0">None</option>
+                            <option value="10">Next 10 min</option>
+                            <option value="60">Next 1 hour</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button class="btn" onclick="clearStrategies()" style="margin-top:1rem;">Clear All Strategies</button>
+        </div>
+    </div>
+    <div id="strategy-tooltip" class="strategy-tooltip"></div>
+    <div id="strategy-rightclick-tooltip" class="strategy-tooltip" style="max-width:320px;display:none;">
+        <div id="rightclick-tooltip-content"></div>
+        <button id="learn-more-btn" style="margin-top:0.7em;background:#00d4ff;color:#fff;border:none;padding:0.4em 1em;border-radius:5px;cursor:pointer;">Learn More</button>
+    </div>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+const strategies = {
+    "RSI Mean Reversion": {
+        desc: "Buys when RSI < 30, sells when RSI > 70. Good for range-bound markets.",
+        color: "#4ade80"
+    },
+    "MACD Crossover": {
+        desc: "Buy when MACD crosses above signal, sell when below. Trend following.",
+        color: "#f59e42"
+    },
+    "Momentum": {
+        desc: "Buys assets with high recent returns, sells laggards.",
+        color: "#00d4ff"
+    },
+    "Breakout": {
+        desc: "Buys when price breaks above resistance, sells on breakdown.",
+        color: "#ef4444"
+    },
+    "Moving Average Cross": {
+        desc: "Buy when short MA crosses above long MA, sell on reverse.",
+        color: "#a78bfa"
+    },
+    "Bollinger Bands": {
+        desc: "Buy at lower band, sell at upper band. Volatility-based.",
+        color: "#fbbf24"
+    },
+    "Supertrend": {
+        desc: "Trend-following indicator using ATR.",
+        color: "#22d3ee"
+    },
+    "VWAP": {
+        desc: "Buys below VWAP, sells above. Used by institutions.",
+        color: "#f472b6"
+    },
+    "ADX Trend": {
+        desc: "Measures trend strength. Buys strong trends.",
+        color: "#34d399"
+    },
+    "Stochastic Oscillator": {
+        desc: "Buys when oversold, sells when overbought.",
+        color: "#f87171"
+    },
+    "ATR Volatility": {
+        desc: "Adjusts position size based on volatility.",
+        color: "#facc15"
+    },
+    "Donchian Channel": {
+        desc: "Buys breakout above channel, sells below.",
+        color: "#818cf8"
+    },
+    "Ichimoku Cloud": {
+        desc: "Comprehensive trend-following system.",
+        color: "#38bdf8"
+    },
+    "Parabolic SAR": {
+        desc: "Trailing stop and reversal system.",
+        color: "#f472b6"
+    }
+};
+
+let appliedStrategies = [];
+let chart;
+
+// --- Live random walk data ---
+let livePriceData = [];
+let liveLabels = [];
+const DATA_LEN = 60;
+
+function getCurrentTimeLabel() {
+    const now = new Date();
+    return now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+}
+
+function initLiveData() {
+    livePriceData = [1000];
+    liveLabels = [getCurrentTimeLabel()];
+    for (let i = 1; i < DATA_LEN; i++) {
+        livePriceData.push(livePriceData[i-1] + (Math.random()-0.48)*8);
+        // Subtract seconds for past labels
+        let past = new Date(Date.now() - (DATA_LEN - i) * 1000);
+        liveLabels.push(past.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'}));
+    }
+}
+initLiveData();
+
+function updateLiveData() {
+    // Simulate a new price with a random walk plus a sine wave for smooth oscillation
+    let last = livePriceData[livePriceData.length-1];
+    let time = Date.now() / 1000;
+    let sineComponent = 10 * Math.sin(time / 5);
+    let next = last + (Math.random()-0.48)*4 + sineComponent * 0.1;
+    livePriceData.push(next);
+    livePriceData.shift();
+
+    // Add new time label
+    liveLabels.push(getCurrentTimeLabel());
+    liveLabels.shift();
+
+    // Update chart if exists
+    if (chart) {
+        chart.data.labels = [...liveLabels];
+        chart.data.datasets[0].data = [...livePriceData];
+        chart.data.datasets = [
+            {
+                label: 'Random Stock Price',
+                data: [...livePriceData],
+                borderColor: '#00d4ff',
+                backgroundColor: 'rgba(0,212,255,0.08)',
+                tension: 0.4,
+                pointRadius: 0
+            },
+            ...appliedStrategies.map(stratKey => {
+                let stratData = livePriceData.map((v, i) => v + Math.sin(i / 6) * 10 + (Math.random() - 0.5) * 5);
+                return {
+                    label: stratKey, // Use stratKey directly as the label
+                    data: stratData,
+                    borderColor: strategies[stratKey].color,
+                    borderDash: [8, 4],
+                    backgroundColor: 'rgba(0,0,0,0)',
+                    tension: 0.3,
+                    pointRadius: 0
+                };
+            })
+        ];
+        chart.update('none');
+    }
+}
+setInterval(updateLiveData, 1000);
+
+// Generate prediction data
+function generatePrediction() {
+    predictionData = [];
+    predictionLabels = [];
+    if (predictionHorizon > 0) {
+        let last = livePriceData[livePriceData.length-1];
+        let now = new Date();
+        for (let i = 1; i <= predictionHorizon; i++) {
+            last = last + (Math.random()-0.48)*8;
+            predictionData.push(last);
+            let future = new Date(now.getTime() + i*1000);
+            predictionLabels.push(future.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'}));
+        }
+    }
+}
+
+function renderChart() {
+    console.log("Rendering chart...");
+    generatePrediction();
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById('strategyChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: [...liveLabels, ...predictionLabels],
+            datasets: [
+                {
+                    label: 'Random Stock Price',
+                    data: [...livePriceData, ...(predictionHorizon ? [null].concat(predictionData) : [])],
+                    borderColor: '#00d4ff',
+                    backgroundColor: 'rgba(0,212,255,0.08)',
+                    tension: 0.3,
+                    pointRadius: 0,
+                    spanGaps: true
+                },
+                ...(predictionHorizon ? [{
+                    label: 'Predicted Price',
+                    data: Array(livePriceData.length).fill(null).concat(predictionData),
+                    borderColor: '#fbbf24',
+                    borderDash: [6,6],
+                    backgroundColor: 'rgba(0,0,0,0)',
+                    tension: 0.3,
+                    pointRadius: 0,
+                    spanGaps: true
+                }] : []),
+                ...appliedStrategies.map(stratKey => {
+                    let stratData = livePriceData.map((v, i) => v + Math.sin(i / 6) * 10 + (Math.random() - 0.5) * 5);
+                    let stratPred = [];
+                    if (predictionHorizon) {
+                        let last = stratData[stratData.length - 1];
+                        for (let i = 1; i <= predictionHorizon; i++) {
+                            last = last + (Math.random() - 0.48) * 8;
+                            stratPred.push(last);
+                        }
+                    }
+                    return {
+                        label: stratKey, // Use stratKey directly as the label
+                        data: stratData.concat(predictionHorizon ? stratPred : []),
+                        borderColor: strategies[stratKey].color,
+                        borderDash: [8, 4],
+                        backgroundColor: 'rgba(0,0,0,0)',
+                        tension: 0.3,
+                        pointRadius: 0,
+                        spanGaps: true
+                    };
+                })
+            ]
+        },
+        options: {
+            plugins: { legend: { labels: { color: '#fff' } } },
+            scales: {
+                x: { 
+                    title: { display: true, text: 'Time', color: '#fff' },
+                    ticks: { color: '#a0a0a0', maxTicksLimit: 12 }
+                },
+                y: { 
+                    title: { display: true, text: 'Price (INR)', color: '#fff' },
+                    ticks: { color: '#a0a0a0', callback: value => `₹${Math.round(value)}` }
+                }
+            }
+        }
+    });
+}
+
+const chartContainer = document.getElementById('chart-container');
+const dropHint = document.getElementById('drop-hint');
+const detailsBox = document.getElementById('strategy-details');
+const detailsContent = document.getElementById('details-content');
+
+chartContainer.addEventListener('dragover', e => {
+    e.preventDefault();
+    chartContainer.style.background = 'rgba(0,212,255,0.12)';
+    dropHint.style.opacity = 0.7;
+});
+chartContainer.addEventListener('dragleave', e => {
+    chartContainer.style.background = 'rgba(255,255,255,0.08)';
+    dropHint.style.opacity = 1;
+});
+chartContainer.addEventListener('drop', e => {
+    e.preventDefault();
+    chartContainer.style.background = 'rgba(255,255,255,0.08)';
+    dropHint.style.opacity = 0;
+    const stratKey = e.dataTransfer.getData('strategy');
+    if(stratKey && strategies[stratKey] && !appliedStrategies.includes(stratKey)) {
+        appliedStrategies.push(stratKey);
+        renderChart();
+        updateStrategyDetails();
+    }
+});
+
+// Make strategies draggable
+document.querySelectorAll('.draggable-strategy').forEach(el => {
+    el.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('strategy', el.getAttribute('data-strategy'));
+    });
+});
+
+// Tooltip logic
+const tooltip = document.getElementById('strategy-tooltip');
+document.querySelectorAll('.draggable-strategy').forEach(el => {
+    // Hover: show tooltip
+    el.addEventListener('mouseenter', e => {
+        const stratKey = el.getAttribute('data-strategy');
+        tooltip.textContent = strategies[stratKey].desc;
+        tooltip.style.display = 'block';
+    });
+    el.addEventListener('mousemove', e => {
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        tooltip.style.top = (e.clientY + 10) + 'px';
+    });
+    el.addEventListener('mouseleave', e => {
+        tooltip.style.display = 'none';
+    });
+
+    // Right click: show custom tooltip with "Learn More"
+    el.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        const stratKey = el.getAttribute('data-strategy');
+        const strat = strategies[stratKey];
+        const tooltipRC = document.getElementById('strategy-rightclick-tooltip');
+        document.getElementById('rightclick-tooltip-content').innerHTML = `
+            <b>${strat.name}</b><br>
+            <span>${strat.desc}</span>
+        `;
+        tooltipRC.style.display = 'block';
+        tooltipRC.style.left = (e.clientX + 15) + 'px';
+        tooltipRC.style.top = (e.clientY + 10) + 'px';
+
+        // Set up Learn More button
+        const btn = document.getElementById('learn-more-btn');
+        btn.onclick = () => {
+            tooltipRC.style.display = 'none';
+            window.location.href = `education.html?strategy=${encodeURIComponent(stratKey)}`;
+        };
+
+        // Hide tooltip if clicking elsewhere
+        document.addEventListener('mousedown', function handler(ev) {
+            if (!tooltipRC.contains(ev.target)) {
+                tooltipRC.style.display = 'none';
+                document.removeEventListener('mousedown', handler);
+            }
+        });
+    });
+
+    // Left click: go to education page for this strategy
+    el.addEventListener('click', e => {
+        const stratKey = el.getAttribute('data-strategy');
+        window.location.href = `education.html?strategy=${encodeURIComponent(stratKey)}`;
+    });
+});
+
+// Right-click tooltip logic
+const rightClickTooltip = document.getElementById('strategy-rightclick-tooltip');
+const rightClickContent = document.getElementById('rightclick-tooltip-content');
+const learnMoreBtn = document.getElementById('learn-more-btn');
+
+document.querySelectorAll('.draggable-strategy').forEach(el => {
+    el.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        const stratKey = el.getAttribute('data-strategy');
+        const strat = strategies[stratKey];
+
+        // Show right-click tooltip
+        rightClickContent.innerHTML = `<b>${strat.name}</b><br>${strat.desc}`;
+        rightClickTooltip.style.display = 'block';
+        rightClickTooltip.style.left = (e.pageX + 10) + 'px';
+        rightClickTooltip.style.top = (e.pageY + 10) + 'px';
+
+        // Learn more button
+        learnMoreBtn.onclick = () => {
+            window.location.href = `education.html?strategy=${encodeURIComponent(stratKey)}`;
+        };
+    });
+});
+
+// Hide right-click tooltip on click elsewhere
+document.addEventListener('click', e => {
+    if (!e.target.closest('.draggable-strategy')) {
+        rightClickTooltip.style.display = 'none';
+    }
+});
+
+function updateStrategyDetails() {
+    if (appliedStrategies.length === 0) {
+        detailsBox.style.display = 'none';
+        return;
+    }
+    detailsBox.style.display = '';
+    detailsContent.innerHTML = appliedStrategies.map(
+        stratKey => `<b>${strategies[stratKey].name}</b><br>${strategies[stratKey].desc}`
+    ).join('<hr style="border:0;border-top:1px solid #333;">');
+    // Show estimated risk/earning/loss for all applied strategies
+    let riskHtml = appliedStrategies.map(stratKey => {
+        // Simulate risk/earning/loss for demo
+        let base = livePriceData[livePriceData.length-1];
+        let estEarning = (Math.random()*0.08 + 0.02) * base; // +2% to +10%
+        let estLoss = -(Math.random()*0.05 + 0.01) * base;   // -1% to -6%
+        let estRisk = Math.abs(estLoss) / (estEarning + Math.abs(estLoss));
+        return `
+            <div style="background:rgba(0,212,255,0.08);padding:1rem 1.5rem;border-radius:8px;">
+                <b>${strategies[stratKey].name}</b><br>
+                <span style="color:#4ade80;">Est. Earning: ₹${estEarning.toFixed(2)}</span><br>
+                <span style="color:#ef4444;">Est. Loss: ₹${estLoss.toFixed(2)}</span><br>
+                <span style="color:#fbbf24;">Risk Ratio: ${(estRisk*100).toFixed(1)}%</span>
+            </div>
+        `;
+    }).join('');
+    document.getElementById('risk-earning-loss').innerHTML = riskHtml;
+}
+
+function clearStrategies() {
+    appliedStrategies = [];
+    renderChart();
+    updateStrategyDetails();
+    dropHint.style.opacity = 1;
+}
+
+let predictionData = [];
+let predictionLabels = [];
+let predictionHorizon = 0;
+
+// Listen for prediction horizon change
+document.getElementById('predict-horizon').addEventListener('change', function() {
+    predictionHorizon = parseInt(this.value);
+    renderChart();
+});
+
+// Save state before leaving the page
+window.addEventListener('beforeunload', function() {
+    localStorage.setItem('appliedStrategies', JSON.stringify(appliedStrategies));
+});
+
+// Restore state on load
+window.addEventListener('DOMContentLoaded', function() {
+    renderChart();
+});
+
+function getStrategyFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('strategy');
+}
+
+window.addEventListener('scroll', () => {
+    document.getElementById('strategy-rightclick-tooltip').style.display = 'none';
+});
+window.addEventListener('resize', () => {
+    document.getElementById('strategy-rightclick-tooltip').style.display = 'none';
+});
+
+function loadStrategies() {
+    fetch('http://localhost:8000/api/strategies/')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('strategy-list');
+            list.innerHTML = '';
+            if (data.length === 0) {
+                // If API returns empty, load from local strategies object
+                for (const stratName in strategies) {
+                    const div = document.createElement('div');
+                    div.className = 'draggable-strategy';
+                    div.draggable = true;
+                    div.setAttribute('data-strategy', stratName);
+                    div.textContent = stratName;
+                    list.appendChild(div);
+                }
+            } else {
+                data.forEach(strat => {
+                    const div = document.createElement('div');
+                    div.className = 'draggable-strategy';
+                    div.draggable = true;
+                    div.setAttribute('data-strategy', strat.name);
+                    div.textContent = strat.name;
+                    list.appendChild(div);
+                });
+            }
+            // Re-attach event listeners
+            document.querySelectorAll('.draggable-strategy').forEach(el => {
+                el.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('strategy', el.getAttribute('data-strategy'));
+                });
+                el.addEventListener('mouseenter', e => {
+                    const stratKey = el.getAttribute('data-strategy');
+                    tooltip.textContent = strategies[stratKey] ? strategies[stratKey].desc : 'Description not available';
+                    tooltip.style.display = 'block';
+                });
+                el.addEventListener('mousemove', e => {
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 10) + 'px';
+                });
+                el.addEventListener('mouseleave', e => {
+                    tooltip.style.display = 'none';
+                });
+                el.addEventListener('contextmenu', e => {
+                    e.preventDefault();
+                    const stratKey = el.getAttribute('data-strategy');
+                    const strat = strategies[stratKey];
+                    const tooltipRC = document.getElementById('strategy-rightclick-tooltip');
+                    document.getElementById('rightclick-tooltip-content').innerHTML = `
+                        <b>${strat ? strat.name : stratKey}</b><br>
+                        <span>${strat ? strat.desc : 'Description not available'}</span>
+                    `;
+                    tooltipRC.style.display = 'block';
+                    tooltipRC.style.left = (e.clientX + 15) + 'px';
+                    tooltipRC.style.top = (e.clientY + 10) + 'px';
+                    const btn = document.getElementById('learn-more-btn');
+                    btn.onclick = () => {
+                        tooltipRC.style.display = 'none';
+                        window.location.href = `education.html?strategy=${encodeURIComponent(stratKey)}`;
+                    };
+                });
+                el.addEventListener('click', e => {
+                    const stratKey = el.getAttribute('data-strategy');
+                    window.location.href = `education.html?strategy=${encodeURIComponent(stratKey)}`;
+                });
+            });
+            // Render the initial chart after loading strategies
+            renderChart();
+        })
+        .catch(error => {
+            console.error('Error loading strategies:', error);
+            // On error, load from local strategies object
+            const list = document.getElementById('strategy-list');
+            list.innerHTML = '';
+            for (const stratName in strategies) {
+                const div = document.createElement('div');
+                div.className = 'draggable-strategy';
+                div.draggable = true;
+                div.setAttribute('data-strategy', stratName);
+                div.textContent = stratName;
+                list.appendChild(div);
+            }
+            // Re-attach event listeners
+            document.querySelectorAll('.draggable-strategy').forEach(el => {
+                el.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('strategy', el.getAttribute('data-strategy'));
+                });
+                el.addEventListener('mouseenter', e => {
+                    const stratKey = el.getAttribute('data-strategy');
+                    tooltip.textContent = strategies[stratKey] ? strategies[stratKey].desc : 'Description not available';
+                    tooltip.style.display = 'block';
+                });
+                el.addEventListener('mousemove', e => {
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 10) + 'px';
+                });
+                el.addEventListener('mouseleave', e => {
+                    tooltip.style.display = 'none';
+                });
+                el.addEventListener('contextmenu', e => {
+                    e.preventDefault();
+                    const stratKey = el.getAttribute('data-strategy');
+                    const strat = strategies[stratKey];
+                    const tooltipRC = document.getElementById('strategy-rightclick-tooltip');
+                    document.getElementById('rightclick-tooltip-content').innerHTML = `
+                        <b>${strat ? strat.name : stratKey}</b><br>
+                        <span>${strat ? strat.desc : 'Description not available'}</span>
+                    `;
+                    tooltipRC.style.display = 'block';
+                    tooltipRC.style.left = (e.clientX + 15) + 'px';
+                    tooltipRC.style.top = (e.clientY + 10) + 'px';
+                    const btn = document.getElementById('learn-more-btn');
+                    btn.onclick = () => {
+                        tooltipRC.style.display = 'none';
+                        window.location.href = `education.html?strategy=${encodeURIComponent(stratKey)}`;
+                    };
+                });
+                el.addEventListener('click', e => {
+                    const stratKey = el.getAttribute('data-strategy');
+                    window.location.href = `education.html?strategy=${encodeURIComponent(stratKey)}`;
+                });
+            });
+        });
+}
+
+loadStrategies();
+
+// Initialize live data
+initLiveData();
+renderChart();
+    </script>
+</body>
+</html>

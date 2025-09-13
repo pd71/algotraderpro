@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | AlgoTrader Pro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-title {
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        .sidebar-item {
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .sidebar-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .content {
+            flex: 1;
+            padding: 2rem;
+        }
+        .portfolio-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(102, 126, 234, 0.1));
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            color: #a0a0a0;
+        }
+        .positive { color: #4ade80; }
+        .negative { color: #ef4444; }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #00d4ff;
+        }
+        .chart-container {
+            height: 300px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .orders-table th, .orders-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .orders-table th {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            .sidebar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">AlgoTrader Pro</div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='/dashboard'">Dashboard</li>
+            <li class="nav-item" onclick="window.location.href='/strategies'">Strategies</li>
+            <li class="nav-item" onclick="window.location.href='/orders'">Orders</li>
+            <li class="nav-item active" onclick="window.location.href='/portfolio'">Portfolio</li>
+            <li class="nav-item" onclick="window.location.href='/market'">Market</li>
+            <li class="nav-item" onclick="window.location.href='/community'">Community</li>
+            <li class="nav-item" onclick="window.location.href='/profile'">Profile</li>
+            <li class="nav-item" onclick="window.location.href='/backtest'">Backtest</li>
+        </ul>
+    </nav>
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-title">Quick Actions</div>
+            <div class="sidebar-item" onclick="alert('Add Funds')">💸 Add Funds</div>
+            <div class="sidebar-item" onclick="alert('Withdraw Funds')">🏦 Withdraw</div>
+            <div class="sidebar-item" onclick="alert('Rebalance Portfolio')">🔄 Rebalance</div>
+            <div class="sidebar-title" style="margin-top:2rem;">Asset Allocation</div>
+            <div class="sidebar-item">Equity: <span class="positive">₹7,00,000</span></div>
+            <div class="sidebar-item">Debt: <span class="positive">₹2,00,000</span></div>
+            <div class="sidebar-item">Funds: <span class="positive">₹1,00,000</span></div>
+        </div>
+        <div class="content">
+            <h2 style="margin-bottom: 2rem;">Portfolio Overview</h2>
+            <div class="portfolio-summary">
+                <div class="metric-card">
+                    <div class="metric-value">₹10,00,000</div>
+                    <div class="metric-label">Total Invested</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">₹12,45,000</div>
+                    <div class="metric-label">Current Value</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value positive">+₹2,45,000</div>
+                    <div class="metric-label">Total Profit/Loss</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value positive">+24.5%</div>
+                    <div class="metric-label">Absolute Return</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value positive">+18.2%</div>
+                    <div class="metric-label">XIRR (Annualized)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">₹1,00,000</div>
+                    <div class="metric-label">Available Funds</div>
+                </div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3 class="card-title">Asset Allocation</h3>
+                    <div class="chart-container">
+                        <div>
+                            <svg width="180" height="180" viewBox="0 0 36 36">
+                                <circle cx="18" cy="18" r="16" fill="#222" />
+                                <path d="M18 2
+                                    A 16 16 0 0 1 33.856 13.856"
+                                    fill="none" stroke="#00d4ff" stroke-width="4"/>
+                                <path d="M33.856 13.856
+                                    A 16 16 0 0 1 18 34"
+                                    fill="none" stroke="#4ade80" stroke-width="4"/>
+                                <path d="M18 34
+                                    A 16 16 0 0 1 2 18"
+                                    fill="none" stroke="#f59e0b" stroke-width="4"/>
+                                <path d="M2 18
+                                    A 16 16 0 0 1 18 2"
+                                    fill="none" stroke="#a0a0a0" stroke-width="4"/>
+                            </svg>
+                            <div style="margin-top:1rem;">
+                                <span style="color:#00d4ff;">■ Equity</span> &nbsp;
+                                <span style="color:#4ade80;">■ Debt</span> &nbsp;
+                                <span style="color:#f59e0b;">■ Funds</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Performance Over Time</h3>
+                    <div class="chart-container">
+                        <div style="color:#a0a0a0;text-align:center;">
+                            <div>📈</div>
+                            <p>Performance chart (1Y)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Risk Profile</h3>
+                    <div style="color:#a0a0a0;text-align:center;">
+                        <p>Risk: <span class="positive">Moderate</span></p>
+                        <p>Beta: 1.12</p>
+                        <p>Std Dev: 14.5%</p>
+                        <p>Sharpe Ratio: 1.25</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Holdings</h3>
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Avg Cost</th>
+                            <th>Current Price</th>
+                            <th>Investment</th>
+                            <th>Current Value</th>
+                            <th>P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RELIANCE</td>
+                            <td>Equity</td>
+                            <td>100</td>
+                            <td>₹2,400</td>
+                            <td>₹2,500</td>
+                            <td>₹2,40,000</td>
+                            <td>₹2,50,000</td>
+                            <td class="positive">+₹10,000</td>
+                        </tr>
+                        <tr>
+                            <td>HDFC Liquid Fund</td>
+                            <td>Fund</td>
+                            <td>500</td>
+                            <td>₹200</td>
+                            <td>₹210</td>
+                            <td>₹1,00,000</td>
+                            <td>₹1,05,000</td>
+                            <td class="positive">+₹5,000</td>
+                        </tr>
+                        <tr>
+                            <td>SBI Nifty ETF</td>
+                            <td>ETF</td>
+                            <td>200</td>
+                            <td>₹150</td>
+                            <td>₹160</td>
+                            <td>₹30,000</td>
+                            <td>₹32,000</td>
+                            <td class="positive">+₹2,000</td>
+                        </tr>
+                        <tr>
+                            <td>ICICI Corporate Bond</td>
+                            <td>Debt</td>
+                            <td>100</td>
+                            <td>₹1,000</td>
+                            <td>₹1,020</td>
+                            <td>₹1,00,000</td>
+                            <td>₹1,02,000</td>
+                            <td class="positive">+₹2,000</td>
+                        </tr>
+                        <tr>
+                            <td>TCS</td>
+                            <td>Equity</td>
+                            <td>50</td>
+                            <td>₹3,200</td>
+                            <td>₹3,100</td>
+                            <td>₹1,60,000</td>
+                            <td>₹1,55,000</td>
+                            <td class="negative">-₹5,000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card" style="margin-top:2rem;">
+                <h3 class="card-title">Recent Transactions</h3>
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Asset</th>
+                            <th>Type</th>
+                            <th>Action</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2025-09-10</td>
+                            <td>RELIANCE</td>
+                            <td>Equity</td>
+                            <td>Buy</td>
+                            <td>20</td>
+                            <td>₹2,480</td>
+                            <td>₹49,600</td>
+                        </tr>
+                        <tr>
+                            <td>2025-09-05</td>
+                            <td>HDFC Liquid Fund</td>
+                            <td>Fund</td>
+                            <td>Buy</td>
+                            <td>100</td>
+                            <td>₹210</td>
+                            <td>₹21,000</td>
+                        </tr>
+                        <tr>
+                            <td>2025-08-28</td>
+                            <td>TCS</td>
+                            <td>Equity</td>
+                            <td>Sell</td>
+                            <td>10</td>
+                            <td>₹3,150</td>
+                            <td>₹31,500</td>
+                        </tr>
+                        <tr>
+                            <td>2025-08-20</td>
+                            <td>ICICI Corporate Bond</td>
+                            <td>Debt</td>
+                            <td>Buy</td>
+                            <td>50</td>
+                            <td>₹1,020</td>
+                            <td>₹51,000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

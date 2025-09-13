@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market | AlgoTrader Pro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .main-container {
+            padding: 2rem;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #00d4ff;
+        }
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+        }
+        .stock-price {
+            font-weight: bold;
+        }
+        .positive { color: #4ade80; }
+        .negative { color: #ef4444; }
+        @media (max-width: 900px) {
+            .main-container { padding: 0.5rem; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">AlgoTrader Pro</div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='/dashboard'">Dashboard</li>
+            <li class="nav-item" onclick="window.location.href='/strategies'">Strategies</li>
+            <li class="nav-item" onclick="window.location.href='/orders'">Orders</li>
+            <li class="nav-item" onclick="window.location.href='/portfolio'">Portfolio</li>
+            <li class="nav-item active" onclick="window.location.href='/market'">Market</li>
+            <li class="nav-item" onclick="window.location.href='/community'">Community</li>
+            <li class="nav-item" onclick="window.location.href='/profile'">Profile</li>
+            <li class="nav-item" onclick="window.location.href='/backtest'">Backtest</li>
+        </ul>
+    </nav>
+    <div class="main-container">
+        <h2 style="margin-bottom: 1rem;">Market Overview</h2>
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3 class="card-title">Market Indices (Live)</h3>
+                <div class="stock-item">
+                    <span>NIFTY 50</span>
+                    <span class="stock-price" id="nifty-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span>BANK NIFTY</span>
+                    <span class="stock-price" id="banknifty-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span>SENSEX</span>
+                    <span class="stock-price" id="sensex-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span>NIFTY IT</span>
+                    <span class="stock-price" id="niftyit-price"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Top Gainers (Live)</h3>
+                <div class="stock-item">
+                    <span id="gainer1-name"></span>
+                    <span class="stock-price positive" id="gainer1-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span id="gainer2-name"></span>
+                    <span class="stock-price positive" id="gainer2-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span id="gainer3-name"></span>
+                    <span class="stock-price positive" id="gainer3-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span id="gainer4-name"></span>
+                    <span class="stock-price positive" id="gainer4-price"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Top Losers (Live)</h3>
+                <div class="stock-item">
+                    <span id="loser1-name"></span>
+                    <span class="stock-price negative" id="loser1-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span id="loser2-name"></span>
+                    <span class="stock-price negative" id="loser2-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span id="loser3-name"></span>
+                    <span class="stock-price negative" id="loser3-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span id="loser4-name"></span>
+                    <span class="stock-price negative" id="loser4-price"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Crypto Prices (Live)</h3>
+                <div class="stock-item">
+                    <span>BTC/INR</span>
+                    <span class="stock-price" id="btc-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span>ETH/INR</span>
+                    <span class="stock-price" id="eth-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span>SOL/INR</span>
+                    <span class="stock-price" id="sol-price"></span>
+                </div>
+                <div class="stock-item">
+                    <span>DOGE/INR</span>
+                    <span class="stock-price" id="doge-price"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">Market News</h3>
+            <div style="color: #a0a0a0;">
+                <p>📰 Sensex hits all-time high as bulls take charge.</p>
+                <p>📉 Nifty Bank index underperforms as profit booking drags down major banks.</p>
+                <p>💹 Mid-cap and Small-cap indices rally, outperforming large caps.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+    // List of symbols for each section
+    const indices = [
+        {id: "nifty-price", symbol: "^NSEI"},
+        {id: "banknifty-price", symbol: "^NSEBANK"},
+        {id: "sensex-price", symbol: "^BSESN"},
+        {id: "niftyit-price", symbol: "^CNXIT"}
+    ];
+    const gainers = [
+        {name: "ADANI PORTS", symbol: "ADANIPORTS.NS", id: "gainer1-price", nameId: "gainer1-name"},
+        {name: "TATA STEEL", symbol: "TATASTEEL.NS", id: "gainer2-price", nameId: "gainer2-name"},
+        {name: "BAJAJ FINANCE", symbol: "BAJFINANCE.NS", id: "gainer3-price", nameId: "gainer3-name"},
+        {name: "MARUTI", symbol: "MARUTI.NS", id: "gainer4-price", nameId: "gainer4-name"}
+    ];
+    const losers = [
+        {name: "RELIANCE", symbol: "RELIANCE.NS", id: "loser1-price", nameId: "loser1-name"},
+        {name: "HDFC BANK", symbol: "HDFCBANK.NS", id: "loser2-price", nameId: "loser2-name"},
+        {name: "TCS", symbol: "TCS.NS", id: "loser3-price", nameId: "loser3-name"},
+        {name: "INFY", symbol: "INFY.NS", id: "loser4-price", nameId: "loser4-name"}
+    ];
+    const cryptos = [
+        {id: "btc-price", symbol: "BTC-USD"},
+        {id: "eth-price", symbol: "ETH-USD"},
+        {id: "sol-price", symbol: "SOL-USD"},
+        {id: "doge-price", symbol: "DOGE-USD"}
+    ];
+
+    function fetchPrice(symbol, callback) {
+        fetch(`/api/market_price?symbol=${symbol}`)
+            .then(res => res.json())
+            .then(data => {
+                callback(data.price);
+            })
+            .catch(() => {
+                callback("N/A");
+            });
+    }
+
+    function updateMarket() {
+        // Indices
+        indices.forEach(idx => {
+            fetchPrice(idx.symbol, price => {
+                document.getElementById(idx.id).innerHTML = `₹${price}`;
+            });
+        });
+        // Gainers
+        gainers.forEach((g, i) => {
+            document.getElementById(g.nameId).textContent = g.name;
+            fetchPrice(g.symbol, price => {
+                document.getElementById(g.id).textContent = `₹${price}`;
+            });
+        });
+        // Losers
+        losers.forEach((l, i) => {
+            document.getElementById(l.nameId).textContent = l.name;
+            fetchPrice(l.symbol, price => {
+                document.getElementById(l.id).textContent = `₹${price}`;
+            });
+        });
+        // Crypto
+        cryptos.forEach(c => {
+            fetchPrice(c.symbol, price => {
+                document.getElementById(c.id).innerHTML = price;
+            });
+        });
+    }
+
+    setInterval(updateMarket, 5000);
+    updateMarket();
+    </script>
+</body>
+</html>
